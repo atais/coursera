@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MySuite extends FunSuite {
+class ParVSuite extends FunSuite {
 
   test("VerticalBoxBlur.blur with radius 2 should correctly blur the entire " +
     "4x3 image") {
@@ -17,11 +17,7 @@ class MySuite extends FunSuite {
     src(0, 1) = 3; src(1, 1) = 4; src(2, 1) = 5; src(3, 1) = 10
     src(0, 2) = 6; src(1, 2) = 7; src(2, 2) = 8; src(3, 2) = 11
 
-    for (i <- 0 until 4){
-      for (j <- 0 until 3){
-        dst.update(i,j, boxBlurKernel(src, i, j, 2 ))
-      }
-    }
+    VerticalBoxBlur.parBlur(src, dst, 2, 2)
 
     def check(x: Int, y: Int, expected: Int) =
       assert(dst(x, y) == expected,

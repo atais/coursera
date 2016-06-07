@@ -1,7 +1,7 @@
 package scalashop
 
-import org.scalameter._
 import common._
+import org.scalameter._
 
 object VerticalBoxBlurRunner {
 
@@ -58,7 +58,23 @@ object VerticalBoxBlur {
     */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
     // TODO implement using the `task` construct and the `blur` method
-    ???
+    // Use Scala ranges to create a list of splitting points (hint: use the by method on ranges).
+    // Then use collection combinators on the list of splitting points to create a list of start
+    // and end tuples, one for each strip (hint: use the zip and tail methods). Finally, use the
+    // task construct to start a parallel task for each strip, and then call join on each task to wait for its completion.
+    val step = src.width / numTasks * 1.0
+    val fstep = math.floor(step).toInt
+
+    val r = (0 until numTasks).map(i => {
+      if (i == numTasks - 1) (fstep * i, src.width)
+      else (fstep * i, fstep * (i + 1))
+    })
+
+    r.map { case (from, to) =>
+      task {
+        blur(src, dst, from, to, radius)
+      }
+    }.foreach(_.join())
   }
 
 }

@@ -43,16 +43,21 @@ package object scalashop {
   def boxBlurKernel(src: Img, x: Int, y: Int, radius: Int): RGBA = {
     var r, g, b, a, c = 0
 
-    def colorValue(f: RGBA => Int)(x: RGBA) = f(x)
-    def getPix(xp: Int, yp: Int) = src.apply(clamp(xp, 0, src.width - 1), clamp(yp, 0, src.height - 1))
+    def color(f: RGBA => Int)(x: Int, y: Int) = f(src.apply(x, y))
 
-    for (i <- x - radius to x + radius) {
-      for (j <- y - radius to y + radius) {
-        val p = getPix(i, j)
-        r += colorValue(red)(p)
-        g += colorValue(green)(p)
-        b += colorValue(blue)(p)
-        a += colorValue(alpha)(p)
+    def field = {
+      def xclamp(x: Int) = clamp(x, 0, src.width - 1)
+      def yclamp(x: Int) = clamp(x, 0, src.height - 1)
+      (xclamp(x - radius), xclamp(x + radius), yclamp(y - radius), yclamp(y + radius))
+    }
+
+    val (xMin, xMax, yMin, yMax) = field
+    for (i <- xMin to xMax) {
+      for (j <- yMin to yMax) {
+        r += color(red)(i, j)
+        g += color(green)(i, j)
+        b += color(blue)(i, j)
+        a += color(alpha)(i, j)
         c += 1
       }
     }
