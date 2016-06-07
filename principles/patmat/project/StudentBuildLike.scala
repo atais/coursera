@@ -10,7 +10,8 @@ import scalaj.http._
 
 import scala.util.{Try, Success, Failure}
 
-case class MapMapString (val map: Map[String, Map[String, String]])
+case class MapMapString(val map: Map[String, Map[String, String]])
+
 /**
   * Note: keep this class concrete (i.e., do not convert it to abstract class or trait).
   */
@@ -154,9 +155,9 @@ class StudentBuildLike protected() extends CommonBuild {
       )
       s.log.info("Connecting to Coursera...")
       val response = Try(http.postData(data)
-                         .headers(hs)
-                         .option(HttpOptions.connTimeout(10000)) // scalaj default timeout is only 100ms, changing that to 10s
-                         .asString) // kick off HTTP POST
+        .headers(hs)
+        .option(HttpOptions.connTimeout(10000)) // scalaj default timeout is only 100ms, changing that to 10s
+        .asString) // kick off HTTP POST
       response
     }
 
