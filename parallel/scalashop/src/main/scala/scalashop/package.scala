@@ -44,7 +44,7 @@ package object scalashop {
     var r, g, b, a, c = 0
 
     def colorValue(f: RGBA => Int)(x: RGBA) = f(x)
-    def getPix(x: Int, y: Int) = src.apply(clamp(x, 0, src.width), clamp(y, 0, src.height))
+    def getPix(xp: Int, yp: Int) = src.apply(clamp(xp, 0, src.width - 1), clamp(yp, 0, src.height - 1))
 
     for (i <- x - radius to x + radius) {
       for (j <- y - radius to y + radius) {
