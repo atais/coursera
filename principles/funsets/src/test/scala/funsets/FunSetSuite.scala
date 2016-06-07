@@ -1,9 +1,7 @@
 package funsets
 
-import org.scalatest.FunSuite
-
-
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
@@ -107,6 +105,22 @@ class FunSetSuite extends FunSuite {
       assert(contains(s, 1), "Union 1")
       assert(contains(s, 2), "Union 2")
       assert(!contains(s, 3), "Union 3")
+    }
+  }
+
+  test("all are unequal") {
+    new TestSets {
+      val s = union(s1, s3)
+      assert(forall(s, i => i % 2 != 0))
+      assert(!exists(s, i => i % 2 == 0))
+    }
+  }
+
+  test("not all are unequal") {
+    new TestSets {
+      val s = union(s1, s2)
+      assert(!forall(s, i => i % 2 != 0))
+      assert(exists(s, i => i % 2 == 0))
     }
   }
 
