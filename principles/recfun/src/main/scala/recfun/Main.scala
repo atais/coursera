@@ -24,18 +24,19 @@ object Main {
     * Exercise 2
     */
   def balance(chars: List[Char]): Boolean = {
-    def balance(chars: List[Char], stack: List[Boolean]): Boolean = {
+    def balance(chars: List[Char], counter: Int): Boolean = {
       if (chars.isEmpty) {
-        stack.isEmpty
+        counter == 0
       } else if (chars.head == '(') {
-        balance(chars.tail, true :: stack)
+        balance(chars.tail, counter + 1)
       } else if (chars.head == ')') {
-        balance(chars.tail, stack.tail)
+        if (counter == 0) throw new RuntimeException("unbalanced")
+        else balance(chars.tail, counter - 1)
       } else {
-        balance(chars.tail, stack)
+        balance(chars.tail, counter)
       }
     }
-    Try(balance(chars, List.empty)).getOrElse(false)
+    Try(balance(chars, 0)).getOrElse(false)
   }
 
   /**

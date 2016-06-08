@@ -4,6 +4,8 @@ import scala.annotation._
 import org.scalameter._
 import common._
 
+import scala.util.Try
+
 object ParallelParenthesesBalancingRunner {
 
   @volatile var seqResult = false
@@ -15,7 +17,7 @@ object ParallelParenthesesBalancingRunner {
     Key.exec.maxWarmupRuns -> 80,
     Key.exec.benchRuns -> 120,
     Key.verbose -> true
-  ) withWarmer(new Warmer.Default)
+  ) withWarmer (new Warmer.Default)
 
   def main(args: Array[String]): Unit = {
     val length = 100000000
@@ -39,24 +41,49 @@ object ParallelParenthesesBalancingRunner {
 object ParallelParenthesesBalancing {
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
-   */
+    */
   def balance(chars: Array[Char]): Boolean = {
-    ???
+    def balance(chars: Array[Char], counter: Int): Boolean = {
+      if (chars.isEmpty) {
+        counter == 0
+      } else if (chars.head == '(') {
+        balance(chars.tail, counter + 1)
+      } else if (chars.head == ')') {
+        if (counter == 0) throw new RuntimeException("unbalanced")
+        else balance(chars.tail, counter - 1)
+      } else {
+        balance(chars.tail, counter)
+      }
+    }
+    Try(balance(chars, 0)).getOrElse(false)
   }
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
-   */
+    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
 
-    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int) /*: ???*/ = {
-      ???
+    @tailrec
+    def traverse(idx: Int, until: Int, sum: Int, closing: Int): (Int, Int) = {
+      if (idx == until) (sum, closing)
+      else if (chars(idx) == '(') traverse(idx + 1, until, sum + 1, closing)
+      else if (chars(idx) == ')') {
+        if (sum == 0) traverse(idx + 1, until, sum, closing + 1)
+        else traverse(idx + 1, until, sum - 1, closing)
+      }
+      else traverse(idx + 1, until, sum, closing)
     }
 
-    def reduce(from: Int, until: Int) /*: ???*/ = {
-      ???
+    def reduce(from: Int, until: Int): (Int, Int) = {
+      if (until - from > threshold) {
+        val ((s1, c1), (s2, c2)) = parallel(reduce(from, (from + until) / 2), reduce((from + until) / 2, until))
+        if (s1 - c2 < 0) throw new RuntimeException("unbalanced")
+        (s1 - c2 + s2, c1)
+      } else {
+        traverse(from, until, 0, 0)
+      }
     }
 
-    reduce(0, chars.length) == ???
+    Try(reduce(0, chars.length) ==(0, 0)).getOrElse(false)
   }
 
   // For those who want more:
