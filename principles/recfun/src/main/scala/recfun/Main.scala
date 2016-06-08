@@ -42,17 +42,11 @@ object Main {
     * Exercise 3
     */
   def countChange(money: Int, coins: List[Int]): Int = {
-    val sorted = coins.sortWith((x, y) => x > y)
-
-    def count(money: Int, coins: List[Int]): Int = {
-      if (money == 0) 1
-      else if (coins.isEmpty) 0
-      else {
-        if (coins.head > money) count(money, coins.tail)
-        else count(money - coins.head, coins) + count(money, coins.tail)
-      }
+    if (money == 0) 1
+    else if (coins.isEmpty) 0
+    else {
+      if (coins.head > money) countChange(money, coins.tail)
+      else countChange(money - coins.head, coins) + countChange(money, coins.tail)
     }
-
-    count(money, sorted)
   }
 }
