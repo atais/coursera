@@ -8,9 +8,11 @@ import org.scalatest.junit.JUnitRunner
 import common._
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory
 
-@RunWith(classOf[JUnitRunner]) 
+@RunWith(classOf[JUnitRunner])
 class LineOfSightSuite extends FunSuite {
+
   import LineOfSight._
+
   test("lineOfSight should correctly handle an array of size 4") {
     val output = new Array[Float](4)
     lineOfSight(Array[Float](0f, 1f, 8f, 9f), output)
@@ -30,5 +32,28 @@ class LineOfSightSuite extends FunSuite {
     assert(output.toList == List(0f, 1f, 4f, 4f))
   }
 
+  test("lineOfSight parallel 1") {
+    val output = new Array[Float](4)
+    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 1)
+    assert(output.toList == List(0f, 1f, 4f, 4f))
+  }
+
+  test("lineOfSight parallel 2") {
+    val output = new Array[Float](4)
+    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 2)
+    assert(output.toList == List(0f, 1f, 4f, 4f))
+  }
+
+  test("lineOfSight parallel 3") {
+    val output = new Array[Float](4)
+    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 3)
+    assert(output.toList == List(0f, 1f, 4f, 4f))
+  }
+
+  test("lineOfSight parallel 4") {
+    val output = new Array[Float](4)
+    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 4)
+    assert(output.toList == List(0f, 1f, 4f, 4f))
+  }
 }
 
