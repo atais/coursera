@@ -41,13 +41,24 @@ class MyParallelParenthesesBalancingSuite extends FunSuite {
     check(").", false)
   }
 
-  test("jaceks example") {
+  test("jaceks example 2") {
     def check(input: String, expected: Boolean) =
       assert(parBalance(input.toArray, 2) == expected,
         s"balance($input) should be $expected")
 
     check("(())()()", true)
     check("(())))((", false)
+    check("(())", true)
+  }
+
+  test("jaceks example 1") {
+    def check(input: String, expected: Boolean) =
+      assert(parBalance(input.toArray, 1) == expected,
+        s"balance($input) should be $expected")
+
+    check("(())()()", true)
+    check("(())))((", false)
+    check("(())", true)
   }
 
 
