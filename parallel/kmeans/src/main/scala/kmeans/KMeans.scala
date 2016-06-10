@@ -43,10 +43,13 @@ class KMeans {
   }
 
   def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = {
-    ???
+    val grouped = points.groupBy(p => findClosest(p, means))
+    val missing = means.filter(m => !grouped.keySet.contains(m)).map(m => (m, Seq.empty))
+    grouped ++ missing
   }
 
-  def findAverage(oldMean: Point, points: GenSeq[Point]): Point = if (points.length == 0) oldMean else {
+  def findAverage(oldMean: Point, points: GenSeq[Point]): Point = if (points.length == 0) oldMean
+  else {
     var x = 0.0
     var y = 0.0
     var z = 0.0
@@ -59,29 +62,34 @@ class KMeans {
   }
 
   def update(classified: GenMap[Point, GenSeq[Point]], oldMeans: GenSeq[Point]): GenSeq[Point] = {
-    ???
+    oldMeans.map(om => findAverage(om, classified.getOrElse(om, Seq.empty)))
   }
 
   def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
-    ???
+    (for ((o, n) <- oldMeans zip newMeans) yield o.squareDistance(n) <= eta).forall(v => v)
   }
 
   @tailrec
   final def kMeans(points: GenSeq[Point], means: GenSeq[Point], eta: Double): GenSeq[Point] = {
-    if (???) kMeans(???, ???, ???) else ??? // your implementation need to be tail recursive
+    val c = classify(points, means)
+    val m = update(c, means)
+    if (!converged(eta)(means, m)) kMeans(points, m, eta) else m
   }
 }
 
 /** Describes one point in three-dimensional space.
- *
- *  Note: deliberately uses reference equality.
- */
+  *
+  * Note: deliberately uses reference equality.
+  */
 class Point(val x: Double, val y: Double, val z: Double) {
   private def square(v: Double): Double = v * v
+
   def squareDistance(that: Point): Double = {
-    square(that.x - x)  + square(that.y - y) + square(that.z - z)
+    square(that.x - x) + square(that.y - y) + square(that.z - z)
   }
+
   private def round(v: Double): Double = (v * 100).toInt / 100.0
+
   override def toString = s"(${round(x)}, ${round(y)}, ${round(z)})"
 }
 
@@ -93,7 +101,7 @@ object KMeansRunner {
     Key.exec.maxWarmupRuns -> 40,
     Key.exec.benchRuns -> 25,
     Key.verbose -> true
-  ) withWarmer(new Warmer.Default)
+  ) withWarmer (new Warmer.Default)
 
   def main(args: Array[String]) {
     val kMeans = new KMeans()
