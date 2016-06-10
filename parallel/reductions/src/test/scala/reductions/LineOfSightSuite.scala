@@ -34,26 +34,18 @@ class LineOfSightSuite extends FunSuite {
 
   test("lineOfSight parallel 1") {
     val output = new Array[Float](4)
-    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 1)
-    assert(output.toList == List(0f, 1f, 4f, 4f))
+    (1 to 4).foreach(i => {
+      parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, i)
+      assert(output.toList == List(0f, 1f, 4f, 4f), s"Error on $i")
+    })
   }
 
   test("lineOfSight parallel 2") {
-    val output = new Array[Float](4)
-    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 2)
-    assert(output.toList == List(0f, 1f, 4f, 4f))
-  }
-
-  test("lineOfSight parallel 3") {
-    val output = new Array[Float](4)
-    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 3)
-    assert(output.toList == List(0f, 1f, 4f, 4f))
-  }
-
-  test("lineOfSight parallel 4") {
-    val output = new Array[Float](4)
-    parLineOfSight(Array[Float](0f, 1f, 8f, 9f), output, 4)
-    assert(output.toList == List(0f, 1f, 4f, 4f))
+    val output = new Array[Float](5)
+    (1 to 5).foreach(i => {
+      parLineOfSight(Array[Float](0f, 7f, 2f, 33f, 48f), output, i)
+      assert(output.toList == List(0f, 7f, 7f, 11f, 12f), s"Error on $i")
+    })
   }
 }
 
