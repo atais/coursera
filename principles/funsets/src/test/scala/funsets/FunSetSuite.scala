@@ -124,5 +124,19 @@ class FunSetSuite extends FunSuite {
     }
   }
 
+  test("multiply them") {
+    new TestSets {
+      val m = map(s1, f => f * 2)
+      assert(contains(m, 2))
+    }
+  }
+
+  test("double them all") {
+    new TestSets {
+      val s = union(s1, s2)
+      assert(forall(map(s, f => f * 2), i => i % 2 == 0))
+    }
+  }
+
 
 }
