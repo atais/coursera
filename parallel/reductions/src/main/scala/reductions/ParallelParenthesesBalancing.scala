@@ -76,13 +76,12 @@ object ParallelParenthesesBalancing {
     def reduce(from: Int, until: Int): (Int, Int) = {
       if (until - from > threshold) {
         val ((s1, c1), (s2, c2)) = parallel(reduce(from, (from + until) / 2), reduce((from + until) / 2, until))
-        if (s1 - c2 < 0) throw new RuntimeException("unbalanced")
+        if (from == 0 && s1 - c2 < 0) throw new RuntimeException("unbalanced")
         (s1 - c2 + s2, c1)
       } else {
         traverse(from, until, 0, 0)
       }
     }
-
     Try(reduce(0, chars.length) ==(0, 0)).getOrElse(false)
   }
 

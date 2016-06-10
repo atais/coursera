@@ -59,8 +59,7 @@ object LineOfSight {
     */
   def upsweepSequential(input: Array[Float], from: Int, until: Int): Float = {
     (from until until).foldLeft(0f) { (max, i) =>
-      if (i == 0) 0
-      else math.max(input(i) / i, max)
+      math.max(input(i) / i, max)
     }
   }
 
@@ -104,14 +103,15 @@ object LineOfSight {
                 tree: Tree): Unit = {
     tree match {
       case l: Leaf => downsweepSequential(input, output, startingAngle, l.from, l.until)
-      case n: Node => parallel(downsweep(input, output, n.maxPrevious, n.left), downsweep(input, output, n.maxPrevious, n.right))
+      case n: Node => parallel(downsweep(input, output, n.left.maxPrevious, n.left), downsweep(input, output, n.maxPrevious, n.right))
     }
   }
 
   /** Compute the line-of-sight in parallel. */
   def parLineOfSight(input: Array[Float], output: Array[Float],
                      threshold: Int): Unit = {
-    val t = upsweep(input, 0, input.length, threshold)
-    downsweep(input, output, 0, t)
+    output(0) = 0
+    val t = upsweep(input, 1, input.length, threshold)
+    downsweep(input, output, input(1), t)
   }
 }
