@@ -47,5 +47,13 @@ class LineOfSightSuite extends FunSuite {
       assert(output.toList == List(0f, 7f, 7f, 11f, 12f), s"Error on $i")
     })
   }
+
+  test("lineOfSight parallel 3") {
+    val output = new Array[Float](7)
+    (1 to 7).foreach(i => {
+      parLineOfSight(Array[Float](0f, 3f, 1f, 1f, 1f, 1f, 30f), output, i)
+      assert(output.toList == List(0f, 3f, 3f, 3f, 3f, 3f, 5f), s"Error on $i")
+    })
+  }
 }
 

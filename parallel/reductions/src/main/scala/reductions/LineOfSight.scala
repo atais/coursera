@@ -59,7 +59,8 @@ object LineOfSight {
     */
   def upsweepSequential(input: Array[Float], from: Int, until: Int): Float = {
     (from until until).foldLeft(0f) { (max, i) =>
-      math.max(input(i) / i, max)
+      if (i == 0) 0
+      else math.max(input(i) / i, max)
     }
   }
 
@@ -106,7 +107,7 @@ object LineOfSight {
       case n: Node =>
         parallel(
           downsweep(input, output, startingAngle, n.left),
-          downsweep(input, output, n.left.maxPrevious, n.right))
+          downsweep(input, output, math.max(n.left.maxPrevious, startingAngle), n.right))
     }
   }
 
