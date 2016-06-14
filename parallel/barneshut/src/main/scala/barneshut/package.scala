@@ -1,5 +1,5 @@
-import common._
 import barneshut.conctrees._
+import common._
 
 package object barneshut {
 
@@ -162,10 +162,7 @@ package object barneshut {
             if (s.size / distance(s.massX, s.massY, q.massX, q.massY) < theta) addForce(q.mass, q.massX, q.massY)
             else traverse(q)
           }
-          decision(quad, nw)
-          decision(quad, ne)
-          decision(quad, sw)
-          decision(quad, se)
+          Seq(nw, ne, sw, se).foreach(q => decision(quad, q))
         }
         // see if node is far enough from the body,
         // or recursion is needed
@@ -191,7 +188,12 @@ package object barneshut {
     for (i <- 0 until matrix.length) matrix(i) = new ConcBuffer
 
     def +=(b: Body): SectorMatrix = {
-      ???
+      // use the body position, boundaries and sectorPrecision to determine the sector into
+      // which the body should go into, and add the body into the corresponding ConcBuffer object
+      def clamp(v: Double, min: Float, max: Float) = math.max(math.min(v, max), min).toInt
+      val x = clamp(math.floor(b.x * SECTOR_PRECISION / boundaries.maxX), boundaries.minX, boundaries.maxX)
+      val y = clamp(math.floor(b.y * SECTOR_PRECISION / boundaries.maxY), boundaries.minY, boundaries.maxY)
+      apply(x, y) += b
       this
     }
 
