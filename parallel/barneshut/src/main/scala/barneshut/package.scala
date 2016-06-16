@@ -153,17 +153,16 @@ package object barneshut {
       }
 
       def traverse(quad: Quad): Unit = (quad: Quad) match {
-        case Empty(_, _, _) => 0
+        case q: Empty =>
         // no force
         case Leaf(_, _, _, bodies) => bodies.foreach(b => addForce(b.mass, b.x, b.y))
         // add force contribution of each body by calling addForce
-        case Fork(nw, ne, sw, se) => {
+        case Fork(nw, ne, sw, se) =>
           def decision(s: Quad, q: Quad) = {
             if (s.size / distance(s.massX, s.massY, q.massX, q.massY) < theta) addForce(q.mass, q.massX, q.massY)
             else traverse(q)
           }
           Seq(nw, ne, sw, se).foreach(q => decision(quad, q))
-        }
         // see if node is far enough from the body,
         // or recursion is needed
       }
@@ -200,7 +199,16 @@ package object barneshut {
     def apply(x: Int, y: Int) = matrix(y * sectorPrecision + x)
 
     def combine(that: SectorMatrix): SectorMatrix = {
-      ???
+
+      def traverse(quad: Quad): Unit = (quad: Quad) match {
+        case q: Empty =>
+        case Leaf(_, _, _, bodies) => bodies.foreach(b => this += b)
+        case Fork(nw, ne, sw, se) => parallel(traverse(nw), traverse(ne), traverse(sw), traverse(se))
+      }
+      val q = that.toQuad(SECTOR_PRECISION)
+      traverse(q)
+
+      this
     }
 
     def toQuad(parallelism: Int): Quad = {
