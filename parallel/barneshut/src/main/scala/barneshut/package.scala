@@ -61,26 +61,21 @@ package object barneshut {
     val size: Float = nw.size * 2
     val mass: Float = nw.mass + ne.mass + sw.mass + se.mass
     val massX: Float = if (mass == 0) centerX
-    else {
-      (nw.mass * nw.massX + ne.mass * ne.massX + sw.mass * sw.massX + se.mass * se.massX) / mass
-    }
+    else (nw.mass * nw.massX + ne.mass * ne.massX + sw.mass * sw.massX + se.mass * se.massX) / mass
 
     val massY: Float = if (mass == 0) centerY
-    else {
-      (nw.mass * nw.massY + ne.mass * ne.massY + sw.mass * sw.massY + se.mass * se.massY) / mass
-    }
+    else (nw.mass * nw.massY + ne.mass * ne.massY + sw.mass * sw.massY + se.mass * se.massY) / mass
+
     val total: Int = nw.total + ne.total + sw.total + se.total
 
     def insert(b: Body): Fork = {
-      if (b.x >= centerX && b.y <= centerY) {
-        Fork(nw.insert(b), ne, sw, se)
-      } else if (b.x >= centerX && b.y > centerY) {
-        Fork(nw, ne.insert(b), sw, se)
-      } else if (b.x < centerX && b.y <= centerY) {
-        Fork(nw, ne, sw.insert(b), se)
-      } else {
-        Fork(nw, ne, sw, se.insert(b))
-      }
+      Seq(nw, ne, sw, se).map(q => (q, distance(b.x, b.y, q.centerX, q.centerY)))
+        .sortBy(_._2).headOption.map { case (q, _) =>
+        if (q == nw) Fork(nw.insert(b), ne, sw, se)
+        else if (q == ne) Fork(nw, ne.insert(b), sw, se)
+        else if (q == sw) Fork(nw, ne, sw.insert(b), se)
+        else Fork(nw, ne, sw, se.insert(b))
+      }.getOrElse(Fork(nw, ne, sw, se))
     }
   }
 
@@ -95,12 +90,11 @@ package object barneshut {
     def insert(b: Body): Quad = {
       if (size > minimumSize) {
         val half = size / 2
-        val f = Fork(
+        val f = Fork(Empty(centerX - half, centerY - half, half),
+          Empty(centerX + half, centerY - half, half),
           Empty(centerX - half, centerY + half, half),
-          Empty(centerX + half, centerY + half, half),
-          Empty(centerX - half, centerY - half, half),
-          Empty(centerX + half, centerY - half, half)
-        )
+          Empty(centerX + half, centerY + half, half))
+
         (bodies :+ b).foldLeft(f)((quad, body) => quad.insert(body))
       } else {
         Leaf(centerX, centerY, size, bodies :+ b)
@@ -190,8 +184,8 @@ package object barneshut {
       // use the body position, boundaries and sectorPrecision to determine the sector into
       // which the body should go into, and add the body into the corresponding ConcBuffer object
       def clamp(v: Double, min: Float, max: Float) = math.max(math.min(v, max), min).toInt
-      val x = clamp(math.floor(b.x * SECTOR_PRECISION / boundaries.maxX), boundaries.minX, boundaries.maxX)
-      val y = clamp(math.floor(b.y * SECTOR_PRECISION / boundaries.maxY), boundaries.minY, boundaries.maxY)
+      val x = clamp(math.floor(b.x * sectorPrecision / boundaries.maxX), 0, sectorPrecision)
+      val y = clamp(math.floor(b.y * sectorPrecision / boundaries.maxY), 0, sectorPrecision)
       apply(x, y) += b
       this
     }
@@ -199,16 +193,13 @@ package object barneshut {
     def apply(x: Int, y: Int) = matrix(y * sectorPrecision + x)
 
     def combine(that: SectorMatrix): SectorMatrix = {
-
       def traverse(quad: Quad): Unit = (quad: Quad) match {
         case q: Empty =>
-        case Leaf(_, _, _, bodies) => bodies.foreach(b => this += b)
+        case Leaf(_, _, _, bodies) => bodies.foreach(b => that += b)
         case Fork(nw, ne, sw, se) => parallel(traverse(nw), traverse(ne), traverse(sw), traverse(se))
       }
-      val q = that.toQuad(SECTOR_PRECISION)
-      traverse(q)
-
-      this
+      traverse(this.toQuad(sectorPrecision))
+      that
     }
 
     def toQuad(parallelism: Int): Quad = {

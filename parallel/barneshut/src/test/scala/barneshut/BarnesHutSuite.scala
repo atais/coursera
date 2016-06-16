@@ -12,7 +12,8 @@ class BarnesHutSuite extends FunSuite {
 
   // test cases for quad tree
 
-import FloatOps._
+  import FloatOps._
+
   test("Empty: center of mass should be the center of the cell") {
     val quad = Empty(51f, 46.3f, 5f)
     assert(quad.massX == 51f, s"${quad.massX} should be 51f")
@@ -67,7 +68,7 @@ import FloatOps._
         assert(size == 5f, s"$size should be 5f")
         assert(bodies == Seq(b), s"$bodies should contain only the inserted body")
       case _ =>
-        fail("Empty.insert() should have returned a Leaf, was $inserted")
+        fail(s"Empty.insert() should have returned a Leaf, was $inserted")
     }
   }
 
@@ -134,5 +135,6 @@ object FloatOps {
           abs(a - b) < precisionThreshold
         }
   }
+
 }
 
