@@ -11,12 +11,33 @@ import common._
 
 class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
 
+  def createBoundaries(v: (Float, Float, Float, Float)) = {
+    val b = new Boundaries()
+    b.minX = v._1
+    b.maxX = v._2
+    b.minY = v._3
+    b.maxY = v._4
+    b
+  }
+
   def updateBoundaries(boundaries: Boundaries, body: Body): Boundaries = {
-    ???
+    def newValues(v: Float, min: Float, max: Float) = {
+      val dist = max - min
+      if (v > max) (v - dist, v)
+      else if (v < min) (v, v + dist)
+      else (min, max)
+    }
+    val (minXN, maxXN) = newValues(body.x, boundaries.minX, boundaries.maxX)
+    val (minYN, maxYN) = newValues(body.y, boundaries.minY, boundaries.maxY)
+    createBoundaries(minXN, maxXN, minYN, maxYN)
   }
 
   def mergeBoundaries(a: Boundaries, b: Boundaries): Boundaries = {
-    ???
+    val minXN = math.min(a.minX, b.minX)
+    val maxXN = math.max(a.maxX, b.maxX)
+    val minYN = math.min(a.minY, b.minY)
+    val maxYN = math.max(a.maxY, b.maxY)
+    createBoundaries(minXN, maxXN, minYN, maxYN)
   }
 
   def computeBoundaries(bodies: Seq[Body]): Boundaries = timeStats.timed("boundaries") {
@@ -28,7 +49,7 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def computeSectorMatrix(bodies: Seq[Body], boundaries: Boundaries): SectorMatrix = timeStats.timed("matrix") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    ???
+    new SectorMatrix(computeBoundaries(bodies), SECTOR_PRECISION)
   }
 
   def computeQuad(sectorMatrix: SectorMatrix): Quad = timeStats.timed("quad") {
@@ -38,7 +59,7 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def updateBodies(bodies: Seq[Body], quad: Quad): Seq[Body] = timeStats.timed("update") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    ???
+    bodies.map(b => b.updated(quad))
   }
 
   def eliminateOutliers(bodies: Seq[Body], sectorMatrix: SectorMatrix, quad: Quad): Seq[Body] = timeStats.timed("eliminate") {
@@ -84,13 +105,13 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def step(bodies: Seq[Body]): (Seq[Body], Quad) = {
     // 1. compute boundaries
     val boundaries = computeBoundaries(bodies)
-    
+
     // 2. compute sector matrix
     val sectorMatrix = computeSectorMatrix(bodies, boundaries)
 
     // 3. compute quad tree
     val quad = computeQuad(sectorMatrix)
-    
+
     // 4. eliminate outliers
     val filteredBodies = eliminateOutliers(bodies, sectorMatrix, quad)
 
