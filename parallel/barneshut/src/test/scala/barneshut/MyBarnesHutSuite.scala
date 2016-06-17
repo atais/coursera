@@ -39,9 +39,6 @@ class MyBarnesHutSuite extends FunSuite {
   }
 
   test("'SectorMatrix.combine' should correctly combine two sector matrices of size 96 containing points: (12, 34), (23, 45), (56, 9), (8, 79), (5, 99)") {
-    def pos(b: Body) = (math.floor(b.x / 96 * SECTOR_PRECISION).toInt, math.floor(b.y / 96 * SECTOR_PRECISION).toInt)
-    def getSm(b: Body, sm: SectorMatrix) = (sm.apply _).tupled.apply(pos(b))
-
     val body1 = new Body(5, 12, 34, 0.1f, 0.1f)
     val body2 = new Body(5, 23, 45, 0.1f, 0.1f)
     val body3 = new Body(5, 56, 9, 0.1f, 0.1f)
@@ -55,6 +52,8 @@ class MyBarnesHutSuite extends FunSuite {
     val sm1 = new SectorMatrix(boundaries, SECTOR_PRECISION)
     val sm2 = new SectorMatrix(boundaries, SECTOR_PRECISION)
 
+    def pos(b: Body) = (math.floor(b.x / boundaries.maxX * SECTOR_PRECISION).toInt, math.floor(b.y / boundaries.maxY * SECTOR_PRECISION).toInt)
+    def getSm(b: Body, sm: SectorMatrix) = (sm.apply _).tupled.apply(pos(b))
     def getSm2(b: Body) = getSm(b, sm2)
     def getSm1(b: Body) = getSm(b, sm1)
 

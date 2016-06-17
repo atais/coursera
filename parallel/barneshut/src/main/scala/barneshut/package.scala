@@ -148,16 +148,13 @@ package object barneshut {
       }
 
       def traverse(quad: Quad): Unit = (quad: Quad) match {
-        case q: Empty =>
+        case Empty(_, _, _) => ;
         // no force
         case Leaf(_, _, _, bodies) => bodies.foreach(b => addForce(b.mass, b.x, b.y))
         // add force contribution of each body by calling addForce
         case Fork(nw, ne, sw, se) =>
-          def decision(s: Quad, q: Quad) = {
-            if (s.size / distance(s.massX, s.massY, q.massX, q.massY) < theta) addForce(q.mass, q.massX, q.massY)
-            else traverse(q)
-          }
-          Seq(nw, ne, sw, se).foreach(q => decision(quad, q))
+          if (quad.size / distance(quad.massX, quad.massY, this.x, this.y) < theta) addForce(quad.mass, quad.massX, quad.massY)
+          else (traverse(nw), traverse(ne), traverse(sw), traverse(se))
         // see if node is far enough from the body,
         // or recursion is needed
       }
@@ -185,8 +182,8 @@ package object barneshut {
       // use the body position, boundaries and sectorPrecision to determine the sector into
       // which the body should go into, and add the body into the corresponding ConcBuffer object
       def clamp(v: Double, min: Float, max: Float) = math.max(math.min(v, max), min).toInt
-      val x = clamp(math.floor(b.x * sectorPrecision / boundaries.maxX), 0, sectorPrecision)
-      val y = clamp(math.floor(b.y * sectorPrecision / boundaries.maxY), 0, sectorPrecision)
+      val x = clamp(math.floor(b.x * sectorPrecision / boundaries.maxX), 0, sectorPrecision - 1)
+      val y = clamp(math.floor(b.y * sectorPrecision / boundaries.maxY), 0, sectorPrecision - 1)
       apply(x, y) += b
       this
     }
