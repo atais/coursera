@@ -191,13 +191,9 @@ package object barneshut {
     def apply(x: Int, y: Int) = matrix(y * sectorPrecision + x)
 
     def combine(that: SectorMatrix): SectorMatrix = {
-      def traverse(quad: Quad): Unit = (quad: Quad) match {
-        case q: Empty =>
-        case Leaf(_, _, _, bodies) => bodies.foreach(b => that += b)
-        case Fork(nw, ne, sw, se) => parallel(traverse(nw), traverse(ne), traverse(sw), traverse(se))
-      }
-      traverse(this.toQuad(sectorPrecision))
-      that
+      val sm = new SectorMatrix(boundaries, sectorPrecision)
+      sm.matrix.indices.par.foreach(i => sm.matrix.update(i, this.matrix.apply(i).combine(that.matrix.apply(i))))
+      sm
     }
 
     def toQuad(parallelism: Int): Quad = {
