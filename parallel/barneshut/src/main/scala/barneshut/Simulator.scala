@@ -30,8 +30,9 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def computeSectorMatrix(bodies: Seq[Body], boundaries: Boundaries): SectorMatrix = timeStats.timed("matrix") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    val sm = new SectorMatrix(computeBoundaries(bodies), SECTOR_PRECISION)
-    parBodies.foldLeft(sm)((sector, body) => sector += body)
+    parBodies
+      .map(b => new SectorMatrix(boundaries, SECTOR_PRECISION) += b)
+      .reduce((s1, s2) => s1.combine(s2))
   }
 
   def computeQuad(sectorMatrix: SectorMatrix): Quad = timeStats.timed("quad") {
@@ -41,7 +42,7 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def updateBodies(bodies: Seq[Body], quad: Quad): Seq[Body] = timeStats.timed("update") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    parBodies.map(b => b.updated(quad))(collection.breakOut)
+    parBodies.map(b => b.updated(quad)).seq
   }
 
   def eliminateOutliers(bodies: Seq[Body], sectorMatrix: SectorMatrix, quad: Quad): Seq[Body] = timeStats.timed("eliminate") {
