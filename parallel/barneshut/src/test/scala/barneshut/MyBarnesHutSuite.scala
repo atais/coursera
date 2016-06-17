@@ -23,7 +23,6 @@ class MyBarnesHutSuite extends FunSuite {
   }
 
   test("Fork.insert(b) should insert recursively in the appropriate quadrant") {
-    // Fork(Leaf(10.0,30.0,10.0,List(@4facf68f)),Leaf(20.0,30.0,10.0,List(@76508ed1)),Empty(10.0,40.0,10.0),Leaf(20.0,40.0,10.0,List(@41e36e46)))
     val e1 = Empty(10, 30, 10)
     val e2 = Empty(20, 30, 10)
     val e3 = Empty(10, 40, 10)
@@ -35,7 +34,15 @@ class MyBarnesHutSuite extends FunSuite {
     f = f.insert(new Body(5, 20, 40, 0.1f, 0.1f))
     f = f.insert(new Body(5, 15, 35, 0.1f, 0.1f))
 
-    print(f)
+    assert(f.isInstanceOf[Fork])
+    assert(f.nw.isInstanceOf[Fork])
+    assert(f.nw.asInstanceOf[Fork].nw.isInstanceOf[Leaf])
+    assert(f.nw.asInstanceOf[Fork].ne.isInstanceOf[Empty])
+    assert(f.nw.asInstanceOf[Fork].sw.isInstanceOf[Empty])
+    assert(f.nw.asInstanceOf[Fork].se.isInstanceOf[Leaf])
+    assert(f.ne.isInstanceOf[Leaf])
+    assert(f.sw.isInstanceOf[Empty])
+    assert(f.se.isInstanceOf[Leaf])
   }
 
   test("'SectorMatrix.combine' should correctly combine two sector matrices of size 96 containing points: (12, 34), (23, 45), (56, 9), (8, 79), (5, 99)") {
