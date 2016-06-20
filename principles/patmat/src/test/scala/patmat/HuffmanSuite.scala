@@ -52,4 +52,9 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
+  test("what is the secret?") {
+    val d = decodedSecret.mkString
+    assert(d == "huffmanestcool")
+  }
+
 }
