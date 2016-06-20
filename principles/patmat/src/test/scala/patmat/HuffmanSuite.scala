@@ -52,6 +52,13 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
+  test("decode and quick encode a very short text should be identity") {
+    new TestTrees {
+      assert(decode(t1, quickEncode(t1)("ab".toList)) === "ab".toList)
+    }
+  }
+
+
   test("what is the secret?") {
     val d = decodedSecret.mkString
     assert(d == "huffmanestcool")
