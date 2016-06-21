@@ -114,9 +114,9 @@ object Anagrams {
   def subtract(x: Occurrences, y: Occurrences): Occurrences = {
     y.foldLeft(x.toMap) { case (acc, (char, count)) =>
       val n = acc.apply(char) - count
-      if (n > 0) acc.updated(char, n - count)
+      if (n > 0) acc.updated(char, n)
       else acc - char
-    }.toList
+    }.toList.sortBy(_._1)
   }
 
   /** Returns a list of all anagram sentences of the given sentence.
@@ -163,13 +163,15 @@ object Anagrams {
     val start = sentenceOccurrences(sentence)
 
     def findSentance(occurrences: Occurrences, words: List[Word]): List[Sentence] = {
-      if (occurrences.isEmpty) List(words)
-      else {
+      if (occurrences.isEmpty) {
+        List(words)
+      } else {
         val all = combinations(occurrences)
-        val words = all.flatMap(a => dictionaryByOccurrences.getOrElse(a, List.empty).filter(p => p.nonEmpty))
+        val possibleWords = all.flatMap(a => dictionaryByOccurrences.getOrElse(a, List.empty)).distinct
 
-        if (words.isEmpty) List.empty
-        else words.flatMap(w => {
+        if (possibleWords.isEmpty) {
+          List.empty
+        } else possibleWords.flatMap(w => {
           findSentance(subtract(occurrences, wordOccurrences(w)), words :+ w)
         })
       }
