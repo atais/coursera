@@ -12,12 +12,12 @@ import TweetLength.MaxTweetLength
 @RunWith(classOf[JUnitRunner])
 class CalculatorSuite extends FunSuite with ShouldMatchers {
 
-  /******************
-   ** TWEET LENGTH **
-   ******************/
+  /** ****************
+    * * TWEET LENGTH **
+    * *****************/
 
   def tweetLength(text: String): Int =
-    text.codePointCount(0, text.length)
+  text.codePointCount(0, text.length)
 
   test("tweetRemainingCharsCount with a constant signal") {
     val result = TweetLength.tweetRemainingCharsCount(Var("hello world"))
@@ -49,6 +49,15 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     assert(resultRed1() == "red")
     val resultRed2 = TweetLength.colorForRemainingCharsCount(Var(-5))
     assert(resultRed2() == "red")
+  }
+
+  test("check cyclic") {
+    val a = Signal(Ref("a").asInstanceOf[Expr])
+    val b = Signal(Ref("b").asInstanceOf[Expr])
+    val map = Map(("a", b), ("b", a))
+
+    val e = Calculator.computeValues(map)
+    e.foreach { case (_, e) => assert(e == Double.NaN) }
   }
 
 }
