@@ -57,7 +57,7 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     val map = Map(("a", b), ("b", a))
 
     val e = Calculator.computeValues(map)
-    e.foreach { case (_, e) => assert(e == Double.NaN) }
+    e.foreach { case (_, e) => assert(e().equals(Double.NaN)) }
   }
 
 }

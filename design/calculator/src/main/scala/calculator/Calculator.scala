@@ -20,25 +20,25 @@ object Calculator {
   def computeValues(
                      namedExpressions: Map[String, Signal[Expr]]): Map[String, Signal[Double]] = {
     namedExpressions.map { case (ex, signal) =>
-      val v = Signal(eval(signal(), namedExpressions))
+      val v = Signal(eval(ex, signal(), namedExpressions))
       (ex, v)
     }
   }
 
-  def eval(expr: Expr, references: Map[String, Signal[Expr]]): Double = {
+  def eval(o: String, expr: Expr, references: Map[String, Signal[Expr]]): Double = {
     expr match {
       case s: Literal => s.v
       case s: Ref => {
-        val t = Try(references.get(s.name).map(e => eval(e(), references)))
-        t match {
-          case Success(c) => c.getOrElse(Double.NaN)
-          case Failure(_) => Double.NaN
+        if (s.name == o) Double.NaN
+        else {
+          val t = references.get(s.name).map(e => eval(o, e(), references))
+          t.getOrElse(Double.NaN)
         }
       }
-      case s: Plus => eval(s.a, references) + eval(s.b, references)
-      case s: Minus => eval(s.a, references) - eval(s.b, references)
-      case s: Times => eval(s.a, references) * eval(s.b, references)
-      case s: Divide => eval(s.a, references) / eval(s.b, references)
+      case s: Plus => eval(o, s.a, references) + eval(o, s.b, references)
+      case s: Minus => eval(o, s.a, references) - eval(o, s.b, references)
+      case s: Times => eval(o, s.a, references) * eval(o, s.b, references)
+      case s: Divide => eval(o, s.a, references) / eval(o, s.b, references)
     }
   }
 
