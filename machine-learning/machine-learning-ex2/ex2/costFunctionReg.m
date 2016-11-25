@@ -19,9 +19,9 @@ grad = zeros(size(theta));
 
 hypo = sigmoid(X * theta);
 reg = theta(2:end, :);
-g_reg = (zeros(theta))' + [0; reg]
+g_reg = (zeros(size(theta))) + [0; reg];
 
-J = (1 / m) * sum( -y .* log(hypo) - (1-y) .* log(1- hypo) ) + (((lambda / (2 * m)) * (reg' * reg) )) ;
+J = (1 / m) * sum( -y .* log(hypo) - (1-y) .* log(1- hypo) ) + (((lambda / (2 * m)) * (reg' * reg) ));
 grad = (((1 / m) * ( ( hypo - y )' * X ))') .+ (lambda/m) * g_reg;
 
 % =============================================================
