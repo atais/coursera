@@ -18,18 +18,18 @@ p = zeros(size(X, 1), 1);
 % Hint: The max function might come in useful. In particular, the max
 %       function can also return the index of the max element, for more
 %       information see 'help max'. If your examples are in rows, then, you
-%       can use max(A, [], 2) to obtain the max for each row.
+%       can use max(A, [], 2) to obtain the maexx for each row.
 %
 
+X = [ones(m, 1) X];
 
+a2 = sigmoid(X * Theta1');
+a2 = [ones(m, 1) a2];
 
+a3 = (a2 * Theta2');
 
-
-
-
-
+[val, p] = max(a3, [], 2);
 
 % =========================================================================
-
 
 end
