@@ -63,18 +63,35 @@ Theta2_grad = zeros(size(Theta2));
 %
 
 
+% forward propagation
+for i = 1: m
+    a1 = X(i, :);
+    
+    z2 = [1 a1] * Theta1';
+    a2 = sigmoid(z2);
+    
+    z3 = [1 a2] * Theta2';
+    a3 = sigmoid(z3);
+    
+    yk = zeros(num_labels, 1);
+    yk(y(i), 1) = 1;
+    
+    d3 = (a3' - yk)';
+    d2 = ((d3' * Theta2)(2:end)) .* sigmoidGradient(z2);
+    
+    J += ((log(a3) * -yk) - (log(1- a3) * (1-yk)));
+endfor
+J = 1/m * J;
+
+Theta1RS = sum((Theta1(:, 2:end).^2)(:));
+Theta2RS = sum((Theta2(:, 2:end).^2)(:));
+
+J = J + (lambda / (2*m) * (Theta1RS + Theta2RS));
 
 
 
-
-
-
-
-
-
-
-
-
+%J = (1 / m) * ((-y' * log(val)) - ((1-y)' * log(1- val))); % + (((lambda / (2 * m)) * (reg' * reg) ));
+% grad = (((1 / m) * ( ( hypo - y )' * X ))') .+ (lambda/m) * g_reg;
 
 
 
