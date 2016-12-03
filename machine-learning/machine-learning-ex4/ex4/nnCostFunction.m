@@ -65,39 +65,43 @@ Theta2_grad = zeros(size(Theta2));
 
 % forward propagation
 for i = 1: m
+    %input layer
     a1 = X(i, :);
     
+    %hidden layer
     z2 = [1 a1] * Theta1';
     a2 = sigmoid(z2);
     
+    %output layer
     z3 = [1 a2] * Theta2';
     a3 = sigmoid(z3);
     
     yk = zeros(num_labels, 1);
     yk(y(i), 1) = 1;
     
+    %back propagation
     d3 = (a3' - yk)';
-    d2 = ((d3' * Theta2)(2:end)) .* sigmoidGradient(z2);
+    d2 = ((d3 * Theta2)(2:end)) .* sigmoidGradient(z2);
     
+    Theta1_grad += d2' * ([1 a1]);
+    Theta2_grad += d3' * ([1 a2]);
+    
+    %cost
     J += ((log(a3) * -yk) - (log(1- a3) * (1-yk)));
 endfor
 J = 1/m * J;
 
+%regularization
 Theta1RS = sum((Theta1(:, 2:end).^2)(:));
 Theta2RS = sum((Theta2(:, 2:end).^2)(:));
 
 J = J + (lambda / (2*m) * (Theta1RS + Theta2RS));
 
+Theta1_gradR = [zeros(hidden_layer_size, 1) ((lambda / m) * (Theta1(:, 2:end))) ];
+Theta2_gradR = [zeros(num_labels, 1) ((lambda / m) * (Theta2(:, 2:end))) ];
 
-
-%J = (1 / m) * ((-y' * log(val)) - ((1-y)' * log(1- val))); % + (((lambda / (2 * m)) * (reg' * reg) ));
-% grad = (((1 / m) * ( ( hypo - y )' * X ))') .+ (lambda/m) * g_reg;
-
-
-
-
-
-% -------------------------------------------------------------
+Theta1_grad = (Theta1_grad ./ m) + Theta1_gradR;
+Theta2_grad = (Theta2_grad ./ m) + Theta2_gradR;
 
 % =========================================================================
 
