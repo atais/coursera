@@ -1,12 +1,10 @@
 package timeusage
 
-import org.apache.spark.sql.{Column, ColumnName, DataFrame, Row}
-import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{DoubleType, StringType, StructType}
+import org.apache.spark.sql.{Column, Row}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
-
-import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
 class TimeUsageSuite extends FunSuite with Matchers with BeforeAndAfterAll {
@@ -41,5 +39,33 @@ class TimeUsageSuite extends FunSuite with Matchers with BeforeAndAfterAll {
 
     classified._1 shouldEqual names.map(new Column(_))
   }
+
+  test("sql") {
+    val (columns, initDf) = TimeUsage.read("/timeusage/atussum.csv")
+    val (primaryNeedsColumns, workColumns, otherColumns) = TimeUsage.classifiedColumns(columns)
+    val summaryDf = TimeUsage.timeUsageSummary(primaryNeedsColumns, workColumns, otherColumns, initDf)
+
+    val expected = TimeUsage.timeUsageGrouped(summaryDf).collect
+    val sql = TimeUsage.timeUsageGroupedSql(summaryDf).collect
+
+    sql shouldEqual expected
+  }
+
+  test("typed") {
+    val (columns, initDf) = TimeUsage.read("/timeusage/atussum.csv")
+    val (primaryNeedsColumns, workColumns, otherColumns) = TimeUsage.classifiedColumns(columns)
+    val summaryDf = TimeUsage.timeUsageSummary(primaryNeedsColumns, workColumns, otherColumns, initDf)
+
+    val expected = TimeUsage.timeUsageGrouped(summaryDf)
+      .collect()
+      .map(r => TimeUsageRow(r.getAs[String](0), r.getAs[String](1), r.getAs[String](2),
+        r.getAs[Double](3), r.getAs[Double](4), r.getAs[Double](5)))
+
+    val typedSummary = TimeUsage.timeUsageSummaryTyped(summaryDf)
+    val typed = TimeUsage.timeUsageGroupedTyped(typedSummary).collect()
+
+    typed shouldEqual expected
+  }
+
 
 }
