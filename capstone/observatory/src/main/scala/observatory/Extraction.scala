@@ -2,8 +2,6 @@ package observatory
 
 import java.time.LocalDate
 
-import org.apache.spark.sql.{Encoders, SparkSession}
-
 /**
   * 1st milestone: data extraction
   */
@@ -16,37 +14,48 @@ object Extraction {
     * @return A sequence containing triplets (date, location, temperature)
     */
   def locateTemperatures(year: Int, stationsFile: String, temperaturesFile: String): Iterable[(LocalDate, Location, Double)] = {
-    val spark = SparkSession.builder().config(Context.sparkConf).getOrCreate()
-    import spark.implicits._
 
-    val weatherSchema = Encoders.product[WeatherStation].schema
-    val temperatureSchema = Encoders.product[Temperature].schema
+    val stations = scala.io.Source.fromInputStream(file(stationsFile))
+      .getLines()
+      .flatMap(l => {
+        l.split(",") match {
+          case Array(stn, wban, lat, lon) =>
+            val loc = Location(lat.toDouble, lon.toDouble)
+            val ws = WeatherStation(stn, Option(wban).getOrElse(""), loc)
+            Option(ws)
+          case _ => None
+        }
+      }).toList.groupBy(s => (s.stn, s.wban))
 
-    val weatherStations = spark.read.schema(weatherSchema).csv(file(stationsFile)).as[WeatherStation]
-    val temperature = spark.read.schema(temperatureSchema).csv(file(temperaturesFile)).as[Temperature]
+    val temperatures = scala.io.Source.fromInputStream(file(temperaturesFile))
+      .getLines()
+      .flatMap(l => {
+        l.split(",") match {
+          case Array(stn, wban, month, day, temp) => {
+            val date = LocalDate.of(year, month.toInt, day.toInt)
+            val tCel = fToC(temp.toDouble)
+            val t = Temperature(stn, Option(wban).getOrElse(""), date, tCel)
+            Option(t)
+          }
+          case _ => None
+        }
+      }).toList.groupBy(s => (s.stn, s.wban))
 
-    weatherStations
-      .na
-      .drop(Seq("lat", "lon"))
-      .join(temperature, $"w_stn" === $"t_stn" && ($"w_wban" === $"t_wban" || ($"w_wban".isNull && $"t_wban".isNull)))
-      .map(r => {
-        val month = r.getAs[Int](6)
-        val day = r.getAs[Int](7)
+    stations.keySet.flatMap(k => {
+      val station = stations.getOrElse(k, List.empty).headOption
+      val temps = temperatures.getOrElse(k, List.empty)
 
-        val lat = r.getAs[Double](2)
-        val lon = r.getAs[Double](3)
-
-        val c = fToC(r.getAs[Double](8))
-
-        ((month, day), Location(lat, lon), c)
+      temps.flatMap(t => {
+        station.map(s => {
+          (t.date, s.loc, t.temp)
+        })
       })
-      .collect()
-      .map { case ((month, day), loc, temp) => (LocalDate.of(year, month, day), loc, temp) }
+    })
   }
 
   private def fToC(f: Double) = BigDecimal((f - 32) / 1.8).setScale(1, BigDecimal.RoundingMode.HALF_EVEN).toDouble
 
-  private def file(name: String) = this.getClass.getResource(name).getFile
+  private def file(name: String) = this.getClass.getResourceAsStream(name)
 
   /**
     * @param records A sequence containing triplets (date, location, temperature)

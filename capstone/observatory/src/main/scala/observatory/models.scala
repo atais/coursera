@@ -1,8 +1,10 @@
 package observatory
 
-case class WeatherStation(w_stn: String, w_wban: String, lat: Double, lon: Double)
+import java.time.LocalDate
 
-case class Temperature(t_stn: String, t_wban: String, month: Int, day: Int, temp: Double)
+case class WeatherStation(stn: String, wban: String, loc: Location)
+
+case class Temperature(stn: String, wban: String, date: LocalDate, temp: Double)
 
 case class Location(lat: Double, lon: Double)
 
