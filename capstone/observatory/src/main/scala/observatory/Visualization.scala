@@ -1,6 +1,6 @@
 package observatory
 
-import com.sksamuel.scrimage.Image
+import com.sksamuel.scrimage.{Image, Pixel}
 
 /**
   * 2nd milestone: basic visualization
@@ -16,7 +16,7 @@ object Visualization {
     val (v1, v2) = temperatures.map { case (l, t) =>
       val gcDist = gcDistance(l, location)
       if (gcDist <= 1) {
-        (t, 0d)
+        (t, 1d)
       } else {
         val dist = math.pow(1.0 / gcDist, 2)
         (dist * t, dist)
@@ -49,7 +49,18 @@ object Visualization {
     * @return The color that corresponds to `value`, according to the color scale defined by `points`
     */
   def interpolateColor(points: Iterable[(Double, Color)], value: Double): Color = {
-    ???
+    val pMap = points.toMap
+    val keys = pMap.keys.toSeq.sorted
+
+    val x1 = keys.find(_ >= value).getOrElse(keys.max)
+    val x0 = keys.reverse.find(_ <= value).getOrElse(keys.min)
+
+    val y1 = pMap.apply(x1)
+    val y0 = pMap.apply(x0)
+
+    if (x0 == x1) y0
+    else
+      (y0 + ((y1 - y0) / (x1 - x0) * (value - x0))).normalize
   }
 
   /**
@@ -58,7 +69,18 @@ object Visualization {
     * @return A 360×180 image where each pixel shows the predicted temperature at its location
     */
   def visualize(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)]): Image = {
-    ???
+    val (w, h) = (360, 180)
+
+    val pixels: Array[Pixel] = Array.fill(w * h) {
+      Pixel.apply(255, 255, 255, 1)
+    }
+
+    val colorsMap = colors.toMap
+    temperatures.foreach { case (loc, temp) =>
+
+      ???
+    }
+    Image(w, h, pixels)
   }
 
 }
