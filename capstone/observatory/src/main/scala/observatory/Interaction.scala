@@ -8,24 +8,20 @@ import com.sksamuel.scrimage.{Image, Pixel}
 object Interaction {
 
   /**
-    * @param zoom Zoom level
-    * @param x X coordinate
-    * @param y Y coordinate
+    * @param tile Tile coordinates
     * @return The latitude and longitude of the top-left corner of the tile, as per http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
     */
-  def tileLocation(zoom: Int, x: Int, y: Int): Location = {
+  def tileLocation(tile: Tile): Location = {
     ???
   }
 
   /**
     * @param temperatures Known temperatures
     * @param colors Color scale
-    * @param zoom Zoom level
-    * @param x X coordinate
-    * @param y Y coordinate
-    * @return A 256×256 image showing the contents of the tile defined by `x`, `y` and `zooms`
+    * @param tile Tile coordinates
+    * @return A 256×256 image showing the contents of the given tile
     */
-  def tile(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)], zoom: Int, x: Int, y: Int): Image = {
+  def tile(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)], tile: Tile): Image = {
     ???
   }
 
@@ -37,8 +33,8 @@ object Interaction {
     *                      y coordinates of the tile and the data to build the image from
     */
   def generateTiles[Data](
-    yearlyData: Iterable[(Int, Data)],
-    generateImage: (Int, Int, Int, Int, Data) => Unit
+    yearlyData: Iterable[(Year, Data)],
+    generateImage: (Year, Tile, Data) => Unit
   ): Unit = {
     ???
   }
