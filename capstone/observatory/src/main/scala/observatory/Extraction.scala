@@ -7,6 +7,10 @@ import java.time.LocalDate
   */
 object Extraction {
 
+  private def file(name: String) = this.getClass.getResourceAsStream(name)
+
+  private def fToC(f: Double) = BigDecimal((f - 32) / 1.8).setScale(1, BigDecimal.RoundingMode.HALF_EVEN).toDouble
+
   /**
     * @param year             Year number
     * @param stationsFile     Path of the stations resource file to use (e.g. "/stations.csv")
@@ -14,7 +18,43 @@ object Extraction {
     * @return A sequence containing triplets (date, location, temperature)
     */
   def locateTemperatures(year: Year, stationsFile: String, temperaturesFile: String): Iterable[(LocalDate, Location, Temperature)] = {
-    ???
+
+    val stations = scala.io.Source.fromInputStream(file(stationsFile))
+      .getLines()
+      .flatMap(l => {
+        l.split(",") match {
+          case Array(stn, wban, lat, lon) =>
+            val loc = Location(lat.toDouble, lon.toDouble)
+            val ws = WeatherStation(stn, Option(wban).getOrElse(""), loc)
+            Option(ws)
+          case _ => None
+        }
+      }).toList.groupBy(s => (s.stn, s.wban))
+
+    val temperatures = scala.io.Source.fromInputStream(file(temperaturesFile))
+      .getLines()
+      .flatMap(l => {
+        l.split(",") match {
+          case Array(stn, wban, month, day, temp) => {
+            val date = LocalDate.of(year, month.toInt, day.toInt)
+            val tCel = fToC(temp.toDouble)
+            val t = TemperatureC(stn, Option(wban).getOrElse(""), date, tCel)
+            Option(t)
+          }
+          case _ => None
+        }
+      }).toList.groupBy(s => (s.stn, s.wban))
+
+    stations.keySet.flatMap(k => {
+      val station = stations.getOrElse(k, List.empty).headOption
+      val temps = temperatures.getOrElse(k, List.empty)
+
+      temps.flatMap(t => {
+        station.map(s => {
+          (t.date, s.loc, t.temp)
+        })
+      })
+    })
   }
 
   /**
@@ -22,7 +62,12 @@ object Extraction {
     * @return A sequence containing, for each location, the average temperature over the year.
     */
   def locationYearlyAverageRecords(records: Iterable[(LocalDate, Location, Temperature)]): Iterable[(Location, Temperature)] = {
-    ???
+    records
+      .groupBy { case (date, loc, _) => (date.getYear, loc) }
+      .map { case ((_, loc), group) =>
+        val sum = group.map(_._3).sum
+        (loc, sum / group.size)
+      }
   }
 
 }

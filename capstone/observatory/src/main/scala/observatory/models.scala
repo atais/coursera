@@ -1,5 +1,11 @@
 package observatory
 
+import java.time.LocalDate
+
+case class WeatherStation(stn: String, wban: String, loc: Location)
+
+case class TemperatureC(stn: String, wban: String, date: LocalDate, temp: Double)
+
 /**
   * Introduced in Week 1. Represents a location on the globe.
   * @param lat Degrees of latitude, -90 ≤ lat ≤ 90
